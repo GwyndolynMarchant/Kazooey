@@ -1,0 +1,21 @@
+[remap]
+
+importer="wav"
+type="AudioStreamSample"
+path="res://.import/13.wav-2e04f44ed3692e81182ed913f26f6b6e.sample"
+
+[deps]
+
+source_file="res://bag/crow/13.wav"
+dest_files=[ "res://.import/13.wav-2e04f44ed3692e81182ed913f26f6b6e.sample" ]
+
+[params]
+
+force/8_bit=false
+force/mono=false
+force/max_rate=false
+force/max_rate_hz=44100
+edit/trim=false
+edit/normalize=false
+edit/loop=false
+compress/mode=0

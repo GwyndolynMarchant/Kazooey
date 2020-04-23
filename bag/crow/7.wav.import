@@ -1,0 +1,21 @@
+[remap]
+
+importer="wav"
+type="AudioStreamSample"
+path="res://.import/7.wav-d9ebc7484e8d5ef47afe9650c1122525.sample"
+
+[deps]
+
+source_file="res://bag/crow/7.wav"
+dest_files=[ "res://.import/7.wav-d9ebc7484e8d5ef47afe9650c1122525.sample" ]
+
+[params]
+
+force/8_bit=false
+force/mono=false
+force/max_rate=false
+force/max_rate_hz=44100
+edit/trim=false
+edit/normalize=false
+edit/loop=false
+compress/mode=0
