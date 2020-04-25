@@ -1,27 +1,44 @@
+# Kazooey is a small AudioSteamPlayer that is used to generate character voices
+# from a sound bank. When told to speak a string, it will determine the number
+# of words needed and randomly select chirps (samples) from a pocket
+# (subdirectory) in its bag (named directory).
+
 extends AudioStreamPlayer
 
 class_name Kazooey
 
-export(String) var Kazooey_root_dir = ""
-export(String) var Speaker_voice_box = ""
+# To use Kazooey, it must first have its root directory set. This is necessary
+# for projects where you might have multiple libraries or tools in subfolders,
+# etc. Then you must set which pocket of the bag this instance
+# will draw from
 
+export(String) var Kazooey_root_dir = ""
+export(String) var Speaker_pocket = ""
+
+# Local variables for navigating Kazooey's bag
 var bag = Directory.new()
 var bag_pocket = ""
 var bag_open = false
+var bag_n = 0
 
+# Debug print function
 func _d_print(s: String):
 	if OS.is_debug_build(): print(s)
 
+# Helper function to open Kazooey's bag. Necessary for Kazooey to start
+# processing files. Returns whether it was successful.
 func _open_bag():
-	bag_pocket = "res://%sbag/%s" % [Kazooey_root_dir, Speaker_voice_box]
+	bag_pocket = "res://%sbag/%s" % [Kazooey_root_dir, Speaker_pocket]
 	_d_print("Chosen pocket: %s" % bag_pocket)
 	bag_open = (bag.open(bag_pocket) == OK)
 	return bag_open
 
+# Helper function to determine how many samples are in the selected pocket
+# of Kazooey's bag.
 func _count_bag():
 	if bag_open:
 		bag.list_dir_begin()
-		var n = 0
+		bag_n = 0
 		var file = bag.get_next()
 		var regex = RegEx.new()
 		regex.compile("(\\d*.wav)")
@@ -29,18 +46,27 @@ func _count_bag():
 			var file_parse = regex.search(file)
 			if file_parse:
 				if file == file_parse.get_string():
-					n += 1
+					bag_n += 1
 			file = bag.get_next()
-		return n
+		return bag_n
 	else:
 		return -1
 
+# Random number generator used for selecting samples
 var rng = RandomNumberGenerator.new()
 
-func _select_chirp(last: int, count: int):
+# Helper function to determine which chirp should be used next. Must be
+# provided with the index of the last chirp used and the total number of
+# chirps in the folder
+func _select_chirp(last: int):
 	rng.randomize()
 	var select = last;
-	while (select == last): select = rng.randi_range(1, count)
+	
+	# Continuously select new numbers until one that isn't the last
+	# number is selected. Includes a clause in case you only have one sample
+	# that makes sure that is the only selected sample
+	while bag_n > 1 and select == last:
+		select = rng.randi_range(1, bag_n)
 	if bag.open(bag_pocket) == OK:
 		bag.list_dir_begin()
 		var file = bag.get_next()
@@ -51,23 +77,33 @@ func _select_chirp(last: int, count: int):
 				file = bag.get_next()
 	return -1
 
+# Helper function to count how many chirps should be made from a single
+# line of dialog. Follows the chirp-per-word method.
 func _word_count_dialog(script_line: String):
 	var regex = RegEx.new()
 	regex.compile("([\\w|']+\\W?)")
 	var result = regex.search_all(script_line)
 	return result.size()
 
+# Helper function to play a chirp using the base AudioStreamPlayer
 func _play_chirp(chirp_file: String):
 	self.stream = load(chirp_file)
 	self.play()
 
+# Tells Kazooey to speak the provided line of dialog. Kazooey will immediately
+# stop whatever it was previously speaking, and queue up a new number of
+# chirps.
 func speak(line: String):
+	self.stop()
 	n_waiting = _word_count_dialog(line)
 
+# Tells Kazooey to immediately stop speaking. Any remaining chirps are
+# removed, causing complete silence.
 func shut_up():
 	n_waiting = 0
 	self.stop()
 
+# Used to unit-test other functions
 func _test_functions():
 	# Testing each function with test data
 	var N_WAV = 18
@@ -91,7 +127,7 @@ func _test_functions():
 	t_passed = true
 	for i in range(1,50):
 		var n_old = n
-		n = _select_chirp(n_old, N_WAV)
+		n = _select_chirp(n_old)
 		if n == n_old or n < 1 or n > N_WAV: t_passed = false
 	if t_passed: print("%s: PASSED" % t_name)
 	else: print("%s: FAILED" % t_name)
@@ -129,23 +165,27 @@ func _test_functions():
 	print("%s: PASSED IF 4 CROWS" % t_name)
 	"""
 
-var n_waiting = 0
-var n_samples = 0
-var select_n = 1
-
+# Initializes Kazooey 
 func _ready():
 	if _open_bag():
-		n_samples = _count_bag()
-		_d_print("Total samples in bag %s: %d" % [Speaker_voice_box, n_samples])
+		_count_bag()
+		_d_print("Total samples in bag %s: %d" % [Speaker_pocket, bag_n])
 	else:
 		_d_print("ERROR: Couldn't open bag.")
 
+var select_n = 1	# Last selected variable
+var n_waiting = 0	# Number of chirps waiting to be emitted
+
+# Every frame, checks to see if a chirp is playing, and if so, if the chirp
+# is done yet. If the chirp is done and chirps are remaining to be played,
+# selects a new one and plays it.
 func _process(_delta):
-	if self.playing and self.get_playback_position() < self.stream.get_length(): pass
+	if self.playing and self.get_playback_position() < self.stream.get_length():
+		pass
 	elif n_waiting == 0: pass
 	else:
-		_d_print("Total samples: %d" % n_samples)
-		select_n = _select_chirp(select_n, n_samples)
+		_d_print("Total samples: %d" % bag_n)
+		select_n = _select_chirp(select_n)
 		_d_print("Selected sample: %d" % select_n)
 		_play_chirp("%s/%d.wav" % [bag_pocket, select_n])
 		n_waiting -= 1
