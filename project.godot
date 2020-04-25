@@ -9,7 +9,7 @@
 config_version=4
 
 _global_script_classes=[ {
-"base": "Node",
+"base": "AudioStreamPlayer",
 "class": "Kazooey",
 "language": "GDScript",
 "path": "res://Kazooey.gd"
@@ -21,6 +21,7 @@ _global_script_class_icons={
 [application]
 
 config/name="Kazooey"
+run/main_scene="res://TestEnv.tscn"
 config/icon="res://icon.png"
 
 [rendering]

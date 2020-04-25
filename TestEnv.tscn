@@ -1,6 +1,12 @@
-[gd_scene load_steps=2 format=2]
+[gd_scene load_steps=3 format=2]
 
 [ext_resource path="res://Kazooey.gd" type="Script" id=1]
+[ext_resource path="res://Test.gd" type="Script" id=2]
 
-[node name="Node" type="Node"]
+[node name="root" type="Spatial"]
+script = ExtResource( 2 )
+
+[node name="Kazooey" type="AudioStreamPlayer" parent="."]
 script = ExtResource( 1 )
+Speaker_voice_box = "crow"
+[connection signal="speak_line" from="." to="Kazooey" method="speak"]
