@@ -1,4 +1,4 @@
-# Kazooey
+# ![Icon](icon.png) Kazooey
 A library for Godot that creates chirpy voices from a sound bank.
 
 ## Usage
