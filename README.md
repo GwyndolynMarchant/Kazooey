@@ -13,4 +13,4 @@ Kazooey requires a folder named `bag` to be present somewhere under the resource
 A new instance of Kazooey is created by attaching it to an AudioEmitter. The base director for Kazooey (the directory containing `bag`) must be provided as a property, as well as the name of the pocekt that Kazooey will draw from when speaking.
 
 ## Credits
-Created by [LunaLapin](https://www.shadenexus.com) during [AdventureJam 2020](https://jams.gamejolt.io/advjam2020)
+Created by [Luna Lapin](https://www.shadenexus.com) during [AdventureJam 2020](https://jams.gamejolt.io/advjam2020)
